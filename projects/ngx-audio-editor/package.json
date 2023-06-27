@@ -1,0 +1,15 @@
+{
+  "name": "ngx-audio-editor",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^16.1.0",
+    "@angular/core": "^16.1.0",
+    "@angular/cdk": "^16.1.2",
+    "@types/wavesurfer.js": "^6.0.6",
+    "wavesurfer.js": "^6.6.4"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}

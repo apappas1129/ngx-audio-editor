@@ -1,0 +1,11 @@
+.audio-editor-controls,
+.player-wrapper,
+.trimmer-wrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.audio-editor-controls {
+  margin-top: 1rem;
+}
