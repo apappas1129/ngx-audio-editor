@@ -3,41 +3,38 @@
   [track]="file"
   [config]="config"
   region
-  (finished)="onFinishedPlaying()"
-  (paused)="onPaused()"
+  (finished)="isPlaying = false"
+  (paused)="isPlaying = false"
   (click)="$event.stopPropagation()"
 ></tm-wavesurfer>
 
 <!-- We want to stop click event propagation to block unwanted click event triggers on the parent/wrapping component. -->
-<div (click)="$event.stopPropagation()">
+<div *ngIf="demo" (click)="$event.stopPropagation()">
   <div class="audio-editor-controls">
+    <button type="button" (click)="playpause()">{{ isPlaying ? 'Pause' : 'Play' }}</button>
+    <button type="button" (click)="stop()">Stop</button>
 
-    <div class="player-wrapper">
-      <button type="button" (click)="playpause()">{{ isPlaying ? 'Pause' : 'Play' }}</button>
-      <button type="button" (click)="stop()">Stop</button>
-    </div>
-
-    <div class="trimmer-wrapper">
-      <button type="button" (click)="toggleTrimmer()">&#9986; {{ isTrimmerEnabled ? 'Disable Trimmer' : 'Enable Trimmer' }}</button>
-      <input
-        type="number"
-        [(ngModel)]="trimStart"
-        (ngModelChange)="onTrimStartChange($event)"
-        (keydown)="onTrimStartKeyDown($event)"
-        [disabled]="!enableTrimmer"
-        min="0"
-        [max]="trimEnd ? trimEnd + 1 : 0"
-      />
-      <button (click)="trimFromBeginning();" [disabled]="!enableTrimmer">&#9198;</button>
-      <input type="number"
-        [(ngModel)]="trimEnd"
-        (ngModelChange)="onTrimEndChange($event)"
-        (keydown)="onTrimEndKeyDown($event)"
-        [disabled]="!enableTrimmer"
-        min="1"
-        [max]="audioDuration"
-      />
-      <button (click)="trimToLast();" [disabled]="!enableTrimmer">&#9199;</button>
-    </div>
+    <button type="button" (click)="toggleTrimmer()">&#9986; {{ isTrimmerEnabled ? 'Disable Trimmer' : 'Enable Trimmer' }}</button>
+    <input
+      type="number"
+      [(ngModel)]="trimStart"
+      (ngModelChange)="setTrimStart($event)"
+      (keydown)="onTrimStartKeyDown($event)"
+      [disabled]="!enableTrimmer"
+      min="0"
+      [max]="trimEnd ? trimEnd + 1 : 0"
+    />
+    <button (click)="trimFromBeginning()" [disabled]="!enableTrimmer"><<</button>
+    <input
+      type="number"
+      [(ngModel)]="trimEnd"
+      (ngModelChange)="setTrimEnd($event)"
+      (keydown)="onTrimEndKeyDown($event)"
+      [disabled]="!enableTrimmer"
+      min="1"
+      [max]="audioDuration"
+    />
+    <button (click)="trimToEnd()" [disabled]="!enableTrimmer">>></button>
+    <span *ngIf="isDownloadingFile">Downloading</span>
   </div>
 </div>

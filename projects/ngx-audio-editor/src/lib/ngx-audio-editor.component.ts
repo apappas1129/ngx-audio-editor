@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, ViewChild } from '@angular/core';
+import { coerceBooleanProperty } from '@angular/cdk/coercion';
 
 import { WavesurferConfig, WavesurferComponent } from './wavesurfer.component';
 import { Region } from 'wavesurfer.js/src/plugin/regions';
@@ -15,7 +16,7 @@ export const DefaultWavesurferConfig: WavesurferConfig = {
   height: 200,
   waveColor: '#62879E',
   progressColor: '#41B883',
-  cursorColor: '#34495E',
+  cursorColor: '#FF0000',
 };
 
 @Component({
@@ -24,18 +25,29 @@ export const DefaultWavesurferConfig: WavesurferConfig = {
   styleUrls: ['ngx-audio-editor.component.scss'],
 })
 export class NgxAudioEditorComponent {
-  file?: File | Blob | string | null;
+  @Input()
+  set demo(value: boolean | string) {
+    console.log('set to demo', { value })
+    this.isDemo = coerceBooleanProperty(value);
+  }
 
+  get demo() {
+    return this.isDemo;
+  }
+
+  @Input()
   config: WavesurferConfig = DefaultWavesurferConfig;
-
-  enableTrimmer = false;
-  private trimmerRegion?: Region;
-  trimStart?: number;
-  trimEnd?: number;
-  isPlaying = false;
 
   @ViewChild('wavesurferComponent', { static: false })
   wavesurferComponent?: WavesurferComponent;
+
+  file?: File | Blob | string | null;
+
+  enableTrimmer = false;
+  trimStart?: number;
+  trimEnd?: number;
+  isPlaying = false;
+  isDownloadingFile = false;
 
   get isTrimmerEnabled() {
     return this.enableTrimmer;
@@ -52,6 +64,9 @@ export class NgxAudioEditorComponent {
     };
   }
 
+  private isDemo = false;
+  private trimmerRegion?: Region;
+
   constructor(private changeDetectorRef: ChangeDetectorRef) {}
 
   reset(file?: typeof this.file, transform?: AudioTransform) {
@@ -62,7 +77,7 @@ export class NgxAudioEditorComponent {
       if (transform.trimStart) this.trimStart = transform.trimStart;
       if (transform.trimEnd) this.trimEnd = transform.trimEnd;
 
-      this.initializeTrimmerRegion();
+      this._initializeTrimmerRegion();
     }
 
     this.wavesurferComponent?.initialize();
@@ -71,19 +86,17 @@ export class NgxAudioEditorComponent {
   private async _handleFileChange(file?: typeof this.file) {
     if (file instanceof File) this.file = file;
     else if (typeof file === 'string') {
-      // this.isDownloadingFile = true;
       this.file = await this.urlToFile(file, 'downloaded');
-      // this.isDownloadingFile = false;
     } else if (file instanceof Blob) {
       this.file = this.blobToFile(file, 'blobToFile');
     }
   }
 
-  initializeTrimmerRegion() {
+  private _initializeTrimmerRegion() {
     this.changeDetectorRef.detectChanges(); // for ViewChild wrapped in *ngIf
     setTimeout(() => {
       if (!this.wavesurferComponent) return;
-      if (this.trimStart && this.trimEnd) {
+      if (typeof this.trimStart === 'number' && this.trimEnd) {
         this.enableTrimmer = true;
         this.trimmerRegion = this.wavesurferComponent.addRegion({
           start: this.trimStart,
@@ -92,9 +105,8 @@ export class NgxAudioEditorComponent {
       } else {
         const start = +this.wavesurferComponent.currentTime.toFixed(2);
         const duration = +this.audioDuration.toFixed(2);
-        const distance = +(duration * 0.25).toFixed(2); // make trim regions 25% long
+        const distance = +(duration * 0.25).toFixed(2); // make default trim region 25% long
         let end = start + distance;
-        // initial trim region will be 25% of audio's duration, minimum 1 second.
         if (end > duration) end = duration;
 
         this.trimmerRegion = this.wavesurferComponent.addRegion({ start, end });
@@ -110,16 +122,16 @@ export class NgxAudioEditorComponent {
   }
 
   /** Clears all regions, resets trim values and sets seeker to 0, */
-  resetWaveSurferComponent() {
+  private _resetWaveSurferComponent() {
     this.wavesurferComponent?.clearRegions();
     this._resetTrimmer();
     this.wavesurferComponent?.seekTo(0);
   }
 
-  public toggleTrimmer() {
+  toggleTrimmer() {
     this.enableTrimmer = !this.enableTrimmer;
-    if (this.enableTrimmer) this.initializeTrimmerRegion();
-    else this.resetWaveSurferComponent();
+    if (this.enableTrimmer) this._initializeTrimmerRegion();
+    else this._resetWaveSurferComponent();
   }
 
   //#region Audio Player logic
@@ -164,29 +176,22 @@ export class NgxAudioEditorComponent {
       this.wavesurferComponent?.seekToSeconds(this.trimmerRegion.start);
   }
 
-  onFinishedPlaying() {
-    this.isPlaying = false;
-  }
-
-  onPaused() {
-    this.isPlaying = false;
-  }
   //#endregion Audio Player logic
 
   //#region Trim feature logic
-  public trimFromBeginning() {
-    this.onTrimStartChange(0);
+  trimFromBeginning() {
+    this.setTrimStart(0);
     this.wavesurferComponent?.seekTo(0);
   }
 
-  public trimToLast() {
-    this.onTrimEndChange(Infinity);
+  trimToEnd() {
+    this.setTrimEnd(Infinity);
   }
 
   // just an arbitrary value. wavesurfer has a bug if Region.end is set equal to Region.start
   private readonly _minimumDifference = 0.1;
 
-  onTrimStartChange(value: number) {
+  setTrimStart(value: number) {
     if (value === null || value === undefined) return;
     const end = Number(this.trimEnd?.toFixed(2) || 0);
     let start = +value.toFixed(2);
@@ -201,7 +206,7 @@ export class NgxAudioEditorComponent {
     this.trimmerRegion?.update({ id: this.trimmerRegion.id, start });
   }
 
-  onTrimEndChange(value: number) {
+  setTrimEnd(value: number) {
     if (value === null || value === undefined) return;
     const start = Number(this.trimStart?.toFixed(2) || 0);
     const duration = +this.audioDuration.toFixed(2);
@@ -235,18 +240,18 @@ export class NgxAudioEditorComponent {
         default behavior, input[step=1], is rounding up the current value (if float) to the
         next largest integer (e.g. if value is 2.6, next value upwards is 3, not 3.6).
         Instead, we want to simply increment by 1 and keep the decimal digits if present. */
-      this.onTrimStartChange(start + 1);
+      this.setTrimStart(start + 1);
     } else if (event.key === 'ArrowDown') {
       event.preventDefault();
-      this.onTrimStartChange(start - 1);
+      this.setTrimStart(start - 1);
     } else {
       this.debounceTrimStartFix && clearTimeout(this.debounceTrimStartFix);
       this.debounceTrimStartFix = setTimeout(() => {
         const input = event.target as HTMLInputElement;
         const numberValue = Number(input.value);
         // sync 2way-binding and Region bounds
-        this.onTrimStartChange(numberValue);
-        // onTrimStartChange's updating of the ngModel (trimStart) does not seem to update the input value.
+        this.setTrimStart(numberValue);
+        // setTrimStart's updating of the ngModel (trimStart) does not seem to update the input value.
         // Doing it manually instead.
         if (numberValue > end) input.value = end.toFixed(2);
         else input.value = +numberValue.toFixed(2) + ''; // round up 2.222[2].. (when user holds a digit)
@@ -264,18 +269,18 @@ export class NgxAudioEditorComponent {
     if (/[a-zA-Z]/.test(event.key) && event.key.length === 1 && !event.ctrlKey) event.preventDefault();
     if (event.key === 'ArrowUp') {
       event.preventDefault();
-      this.onTrimEndChange(end + 1);
+      this.setTrimEnd(end + 1);
     } else if (event.key === 'ArrowDown') {
       event.preventDefault();
-      this.onTrimEndChange(end - 1);
+      this.setTrimEnd(end - 1);
     } else {
       this.debounceTrimEndFix && clearTimeout(this.debounceTrimEndFix);
       this.debounceTrimEndFix = setTimeout(() => {
         const input = event.target as HTMLInputElement;
         const numberValue = Number(input.value);
         // sync 2way-binding and Region bounds
-        this.onTrimEndChange(numberValue);
-        // onTrimEndChange's updating of the ngModel (trimEnd) does not seem to update the input value.
+        this.setTrimEnd(numberValue);
+        // setTrimEnd's updating of the ngModel (trimEnd) does not seem to update the input value.
         // Doing it manually instead.
         const value = distance < duration ? distance : duration;
         if (numberValue <= start) input.value = value.toFixed(2);
@@ -304,14 +309,15 @@ export class NgxAudioEditorComponent {
   }
 
   private async urlToFile(url: string, fileName?: string): Promise<File> {
+    this.isDownloadingFile = true;
     const response = await fetch(url);
     const blob = await response.blob();
+    this.isDownloadingFile = false;
     return this.blobToFile(blob, fileName);
   }
 
   private blobToFile(blob: Blob, fileName?: string): File {
     const metadata = { type: blob.type };
-    if (!fileName) fileName = `${new Date().toJSON().slice(0, 10)}.jpg`;
     return new File([blob], fileName || new Date().toJSON().slice(0, 10), metadata);
   }
 }
