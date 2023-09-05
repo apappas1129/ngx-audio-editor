@@ -1,5 +1,5 @@
 {
-  "name": "ngx-audio-editor-workspace",
+  "name": "ngx-audio-editor",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -8,7 +8,6 @@
     "watch": "ng build ngx-audio-editor --watch --configuration development",
     "test": "ng test"
   },
-  "private": true,
   "dependencies": {
     "@angular/animations": "^16.1.0",
     "@angular/cdk": "^16.1.2",
