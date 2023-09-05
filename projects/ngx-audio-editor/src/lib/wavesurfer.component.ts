@@ -39,9 +39,7 @@ export class WavesurferComponent implements AfterViewInit, OnChanges, OnInit, On
   private _enableRegionPlugin = false;
   private _regionPlugin?: RegionsPlugin;
 
-  constructor() {
-    console.log('');
-  }
+  constructor() { }
 
   ngOnInit() {
     if (!this.config) throw new Error('@Input config is required.');

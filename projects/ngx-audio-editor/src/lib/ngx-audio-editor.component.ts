@@ -27,7 +27,6 @@ export const DefaultWavesurferConfig: WavesurferConfig = {
 export class NgxAudioEditorComponent {
   @Input()
   set demo(value: boolean | string) {
-    console.log('set to demo', { value });
     this.isDemo = coerceBooleanProperty(value);
   }
 

@@ -15,7 +15,6 @@ export class AppComponent {
     const file = inputElement.files![0];
     if (['audio/mpeg', 'audio/wav'].includes(file?.type)) {
       this.audioEditor.reset(file);
-      console.log('test 2', this.audioEditor2)
       this.audioEditor2.reset(file);
     } else console.log('Please select an MP3 or WAV file.');
   }
