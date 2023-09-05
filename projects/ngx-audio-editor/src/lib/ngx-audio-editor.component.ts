@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, Input, ViewChild } from '@angular/core';
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
 
 import { WavesurferConfig, WavesurferComponent } from './wavesurfer.component';
-import { Region } from 'wavesurfer.js/src/plugin/regions';
+import { Region, RegionParams } from 'wavesurfer.js/src/plugin/regions';
 
 export interface AudioTransform {
   trimStart?: number;
@@ -27,7 +27,7 @@ export const DefaultWavesurferConfig: WavesurferConfig = {
 export class NgxAudioEditorComponent {
   @Input()
   set demo(value: boolean | string) {
-    console.log('set to demo', { value })
+    console.log('set to demo', { value });
     this.isDemo = coerceBooleanProperty(value);
   }
 
@@ -37,6 +37,8 @@ export class NgxAudioEditorComponent {
 
   @Input()
   config: WavesurferConfig = DefaultWavesurferConfig;
+
+  @Input() trimRegionOptions: RegionParams = {};
 
   @ViewChild('wavesurferComponent', { static: false })
   wavesurferComponent?: WavesurferComponent;
@@ -101,6 +103,7 @@ export class NgxAudioEditorComponent {
         this.trimmerRegion = this.wavesurferComponent.addRegion({
           start: this.trimStart,
           end: this.trimEnd,
+          ...this.trimRegionOptions,
         });
       } else {
         const start = +this.wavesurferComponent.currentTime.toFixed(2);
@@ -109,7 +112,7 @@ export class NgxAudioEditorComponent {
         let end = start + distance;
         if (end > duration) end = duration;
 
-        this.trimmerRegion = this.wavesurferComponent.addRegion({ start, end });
+        this.trimmerRegion = this.wavesurferComponent.addRegion({ start, end, ...this.trimRegionOptions });
 
         // these variables are for the inputs trim "from" and "to".
         this.trimStart = start;
@@ -266,7 +269,8 @@ export class NgxAudioEditorComponent {
     const distance = start + this._minimumDifference;
     const duration = +this.audioDuration.toFixed(2);
 
-    if (/[a-zA-Z]/.test(event.key) && event.key.length === 1 && !event.ctrlKey) event.preventDefault();
+    if (/[a-zA-Z]/.test(event.key) && event.key.length === 1 && !event.ctrlKey)
+      event.preventDefault();
     if (event.key === 'ArrowUp') {
       event.preventDefault();
       this.setTrimEnd(end + 1);
@@ -284,7 +288,7 @@ export class NgxAudioEditorComponent {
         // Doing it manually instead.
         const value = distance < duration ? distance : duration;
         if (numberValue <= start) input.value = value.toFixed(2);
-        else input.value = (+numberValue.toFixed(2)) + ''; // round up 2.222[2].. (when user holds a digit)
+        else input.value = +numberValue.toFixed(2) + ''; // round up 2.222[2].. (when user holds a digit)
       }, 250);
     }
   }
@@ -318,6 +322,10 @@ export class NgxAudioEditorComponent {
 
   private blobToFile(blob: Blob, fileName?: string): File {
     const metadata = { type: blob.type };
-    return new File([blob], fileName || new Date().toJSON().slice(0, 10), metadata);
+    return new File(
+      [blob],
+      fileName || new Date().toJSON().slice(0, 10),
+      metadata
+    );
   }
 }

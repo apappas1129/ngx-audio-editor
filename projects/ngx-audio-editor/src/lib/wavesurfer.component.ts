@@ -8,7 +8,7 @@ import RegionsPlugin, { Region, RegionParams, RegionsPluginParams } from 'wavesu
 export type WavesurferConfig = Pick<WaveSurferParams, Exclude<keyof WaveSurferParams, 'container' | 'plugins'>>;
 
 @Component({
-  selector: 'tm-wavesurfer',
+  selector: 'wavesurfer',
   template: '<div [id]="uuid"></div>',
 })
 export class WavesurferComponent implements AfterViewInit, OnChanges, OnInit, OnDestroy {

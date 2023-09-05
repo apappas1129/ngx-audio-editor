@@ -300,3 +300,96 @@
   input[type=file] {
     margin-bottom: 1rem;
   }
+
+  .custom-toolbar {
+    display: flex;
+    gap: 1rem;
+    padding: 0 1rem;
+    color: white;
+  }
+
+  .custom-card {
+    border-radius: 4px;
+    padding: 1rem 0;
+    background-color: #1E1F26;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  $kolor: #170824;
+  $playSize: 20px;
+  $playSizeHalf: $playSize / 2;
+
+  .custom-playpause,
+  .custom-stop {
+    background-color: #F7E801;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 3.2rem;
+    aspect-ratio: 1;
+    color: $kolor;
+    cursor: pointer;
+    border: none;
+  }
+
+  .custom-playpause {
+    &::before {
+      content: '';
+
+      box-sizing: border-box;
+      width: 0;
+      height: $playSize;
+      border-color: transparent transparent transparent $kolor;
+      transition: 100ms all ease;
+    }
+
+    &.play::before {
+      margin-left: 4px;
+      border-style: solid;
+      border-width: $playSizeHalf 0px $playSizeHalf $playSize;
+    }
+
+    &.pause::before {
+      border-style: double;
+      border-width: 0px 0px 0px 16px;
+    }
+
+    &:hover::before {
+      border-color: transparent transparent transparent $kolor;
+    }
+  }
+
+  .custom-stop::before {
+    content: '';
+    padding: 0.62rem;
+    background-color: $kolor;
+  }
+
+  .custom-crop-toggle {
+    border-radius: 4px;
+    padding: 0.5rem;
+    border: none;
+    cursor: pointer;
+    align-self: center;
+    background-color: #0BF9FE;
+    color: $kolor;
+    font-weight: bolder;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 14px;
+  }
+
+  .custom-trim-start,
+  .custom-trim-end {
+    color: #F7E801;
+    align-self: center;
+  }
+
+  ::ng-deep ngx-audio-editor {
+    region.wavesurfer-region {
+      mix-blend-mode: difference;
+    }
+  }

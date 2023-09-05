@@ -27,6 +27,48 @@
     <input type="file" (change)="handleFileInput($event)" accept=".mp3, .wav" multiple="false">
     <ngx-audio-editor #audioEditor demo></ngx-audio-editor>
   </section>
+
+  <section>
+    <h2>Customize your own</h2>
+    <div class="custom-card">
+      <ngx-audio-editor #audioEditor2 [config]="{
+        barWidth: 2,
+        barGap: 1,
+        cursorWidth: 1,
+        height: 150,
+        waveColor: '#FB05C7',
+        progressColor: '#0BF9FE',
+        cursorColor: '#FFFFFF',
+        backgroundColor: '#170824'
+      }"
+      [trimRegionOptions]="{
+        color: '#F7E801', 
+        handleStyle: {
+          left: { backgroundColor: '#FF0000' },
+          right: { backgroundColor: '#44DD55' }
+        }
+      }"></ngx-audio-editor>
+
+      <div class="custom-toolbar">
+        <button 
+          (click)="audioEditor2.playpause()"
+          class="custom-playpause"
+          [class]="audioEditor2.isPlaying ? 'pause' : 'play'">
+        </button>
+        <button (click)="audioEditor2.stop()" class="custom-stop">
+        </button>
+        <button (click)="audioEditor2.toggleTrimmer()" class="custom-crop-toggle">
+          {{ audioEditor2.isTrimmerEnabled ? 'Disable Trimmer' : 'Enable Trimmer' }}
+        </button>
+       <ng-container *ngIf="audioEditor2.isTrimmerEnabled">
+        <span class="custom-trim-start"> start: {{ audioEditor2.trimStart }}</span>
+        <span class="custom-trim-end"> end: {{ audioEditor2.trimEnd }}</span>
+       </ng-container>
+      </div>
+    </div>
+
+
+  </section>
 </main>
 
 <footer>

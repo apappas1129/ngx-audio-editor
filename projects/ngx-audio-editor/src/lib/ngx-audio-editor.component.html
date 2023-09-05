@@ -1,4 +1,4 @@
-<tm-wavesurfer
+<wavesurfer
   #wavesurferComponent
   [track]="file"
   [config]="config"
@@ -6,7 +6,7 @@
   (finished)="isPlaying = false"
   (paused)="isPlaying = false"
   (click)="$event.stopPropagation()"
-></tm-wavesurfer>
+></wavesurfer>
 
 <!-- We want to stop click event propagation to block unwanted click event triggers on the parent/wrapping component. -->
 <div *ngIf="demo" (click)="$event.stopPropagation()">
